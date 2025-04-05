@@ -117,17 +117,41 @@ console.log('Average discount =', averageDiscount);
 //   ....
 //   'community-name-n': [{...}, {...}, ..., {...}],
 // };
-//
+const communities = {};
+
+for (const d of deals) {
+  const name = d.communityName;
+  // if it doesn't exist, initialize an empty array
+  if (!communities[name]) {
+    communities[name] = [];
+  }
+  // push the deal into the right array
+  communities[name].push(d);
+}
 // 2. Log the variable
+console.log(communities);
 // 3. Log the number of deals by community
+for (const [communityName, dealsArray] of Object.entries(communities)) {
+  console.log(`${communityName} has ${dealsArray.length} deals`);
+}
+
 
 // 🎯 TODO 9: Sort by price for each community
 // 1. For each community, sort the deals by discount price, from highest to lowest
+for (const name in communities) {
+  communities[name].sort((a, b) => b.price - a.price);
+}
 // 2. Log the sort
+console.log('Communities sorted by price descending =', communities);
+
 
 // 🎯 TODO 10: Sort by date for each community
 // 1. For each set, sort the deals by date, from old to recent
+for (const name in communities) {
+  communities[name].sort((a, b) => new Date(a.date) - new Date(b.date));
+}
 // 2. Log the sort
+console.log('Communities sorted by date old -> new:', communities);
 
 
 /**
