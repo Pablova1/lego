@@ -482,7 +482,13 @@ console.log('Found item =', foundItem);
 
 // 🎯 TODO 14: Delete a specific item
 // 1. Delete the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
+const index = VINTED.findIndex(item => item.uuid === targetUuid);
+if (index !== -1) {
+  VINTED.splice(index, 1);
+}
 // 2. Log the new list of items
+console.log('New VINTED list after removal =', VINTED);
+
 
 // 🎯 TODO 5: Save a favorite item
 // We declare and assign a variable called `sealedCamera`
@@ -501,6 +507,8 @@ let camera = sealedCamera;
 camera.favorite = true;
 
 // 1. Log `sealedCamera` and `camera` variables
+console.log('sealedCamera =', sealedCamera);
+console.log('camera =', camera);
 // 2. What do you notice?
 
 // we make (again) a new assignment again
@@ -513,7 +521,9 @@ sealedCamera = {
 };
 
 // 3. Update `camera` property with `favorite` to true WITHOUT changing sealedCamera properties
-
+camera = { ...sealedCamera, favorite: true };
+console.log('New sealedCamera =', sealedCamera);
+console.log('New camera =', camera);
 
 // 🎯 TODO 11: Compute the profitability
 // From a specific deal called `deal`
@@ -525,8 +535,10 @@ const deal = {
 }
 
 // 1. Compute the potential highest profitability based on the VINTED items
+const lowestVintedPrice = Math.min(...VINTED.map(item => parseFloat(item.price)));
+const potentialProfitability = deal.retail - lowestVintedPrice;
 // 2. Log the value
-
+console.log('Potential highest profitability =', potentialProfitability.toFixed(2));
 
 
 /**
@@ -537,4 +549,6 @@ const deal = {
 
 // 🎯 LAST TODO: Save in localStorage
 // 1. Save MY_FAVORITE_DEALERS in the localStorage
+localStorage.setItem('my_favorite_dealers', JSON.stringify(MY_FAVORITE_DEALERS));
 // 2. log the localStorage
+console.log('🎯 LAST TODO - localStorage my_favorite_dealers =', localStorage.getItem('my_favorite_dealers'));
