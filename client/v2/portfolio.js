@@ -165,6 +165,137 @@ const render = (deals, pagination) => {
   renderLegoSetIds(deals)
 };
 
+// Sélecteur
+const selectSort = document.querySelector('#sort-select');
+
+function applySort() {
+  const sortValue = selectSort.value;
+  
+  // Copie du tableau pour ne pas écraser l'original
+  let sortedDeals = [...currentDeals];
+
+  if (sortValue === 'price-asc') {
+    // Tri par prix croissant
+    sortedDeals.sort((a, b) => a.price - b.price);
+  } 
+  else if (sortValue === 'price-desc') {
+    // Tri par prix décroissant
+    sortedDeals.sort((a, b) => b.price - a.price);
+  } 
+  else if (sortValue === 'date-asc') {
+    // Tri du plus récent au plus ancien
+    // Suppose qu'on a un champ 'date' ou 'createdAt'
+    sortedDeals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } 
+  else if (sortValue === 'date-desc') {
+    // Tri du plus ancien au plus récent
+    sortedDeals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  // On réaffiche la liste
+  renderDeals(sortedDeals);
+  
+  // Mise à jour du compteur de deals si besoin
+  spanNbDeals.innerHTML = sortedDeals.length;
+}
+
+const sectionSales = document.querySelector('#sales');
+
+/**
+ * Fetch Vinted sales for a given lego set id
+ * 
+ * @param {String} legoSetId
+ * @returns {Array} array of sales
+ */
+async function fetchSales(legoSetId) {
+  try {
+    const response = await fetch(`https://lego-api-blue.vercel.app/sales?id=${legoSetId}`);
+    const body = await response.json();
+    
+    // On vérifie si la requête a réussi
+    if (body.success !== true) {
+      console.error('Failed to fetch sales:', body);
+      return [];
+    }
+
+    // Au lieu de "return body.data;", on renvoie directement le tableau:
+    return body.data.result; // <-- tableau des ventes
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+
+/**
+ * Display an array of Vinted sales in the #sales section
+ * @param {Array} sales
+ */
+function displaySales(sales) {
+  // On vide d'abord la section
+  sectionSales.innerHTML = '<h2>Vinted Sales</h2>';
+
+  if (sales.length === 0) {
+    sectionSales.innerHTML += '<p>No sales found for this set.</p>';
+    return;
+  }
+
+  // On peut créer un conteneur
+  const div = document.createElement('div');
+
+  // Construire le HTML de chaque vente
+  const template = sales.map(item => {
+    return `
+      <div class="sale">
+        <span>Title: ${item.title}</span>
+        <span>Price: ${item.price} €</span>
+        <!-- un lien vers la vente, ouvrable dans un nouvel onglet -->
+        <a href="${item.link}" target="_blank">See item</a>
+      </div>
+    `;
+  }).join('');
+
+  div.innerHTML = template;
+  sectionSales.appendChild(div);
+}
+
+const spanNbSales = document.querySelector('#nbSales');
+
+async function fetchSales(legoSetId) {
+  // Extrait minimal : renvoie un tableau "result"
+  const response = await fetch(`https://lego-api-blue.vercel.app/sales?id=${legoSetId}`);
+  const body = await response.json();
+  if (body.success !== true) {
+    console.error('Failed to fetch sales:', body);
+    return [];
+  }
+  // On retourne le tableau
+  // (body.data.result) selon la structure
+  return body.data.result;
+}
+
+function displaySales(sales) {
+  sectionSales.innerHTML = '<h2>Vinted Sales</h2>';
+
+  // On peut, par exemple, afficher "No sales found" si le tableau est vide
+  if (sales.length === 0) {
+    sectionSales.innerHTML += '<p>No sales found for this set.</p>';
+    return;
+  }
+
+  const template = sales.map(item => `
+    <div class="sale">
+      <span>Title: ${item.title}</span>
+      <span>Price: ${item.price} €</span>
+      <a href="${item.link}" target="_blank">View</a>
+    </div>
+  `).join('');
+
+  sectionSales.innerHTML += template;
+}
+
+const selectLegoSetId = document.querySelector('#lego-set-id-select');
+
 /**
  * Declaration of all Listeners
  */
@@ -199,3 +330,31 @@ selectPage.addEventListener('change', async (event) => {
 discountCheckbox.addEventListener('change', applyFilters);
 mostCommentedCheckbox.addEventListener('change', applyFilters);
 hotCheckbox.addEventListener('change', applyFilters);
+
+// Listener pour trier selon la valeur sélectionnée
+selectSort.addEventListener('change', () => {
+  applySort();
+});
+
+selectLegoSetIds.addEventListener('change', async (event) => {
+  const legoSetId = event.target.value;
+
+  // On va chercher les ventes Vinted pour cet id
+  const sales = await fetchSales(legoSetId);
+
+  // On les affiche
+  displaySales(sales);
+});
+
+selectLegoSetId.addEventListener('change', async event => {
+  const legoSetId = event.target.value;
+
+  // 1. On fetch les ventes
+  const sales = await fetchSales(legoSetId);
+
+  // 2. On met à jour "nbSales" => Feature 8
+  spanNbSales.textContent = sales.length;
+
+  // 3. On affiche la liste des ventes
+  displaySales(sales);
+});
