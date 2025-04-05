@@ -469,13 +469,16 @@ const hasVeryOldItem = VINTED.some(item => {
   const publishedTime = new Date(item.published).getTime();
   return (now - publishedTime) > THREE_WEEKS_IN_MS;
 });
-
-console.log('Has very old items ?', hasVeryOldItem);
+console.log('Are the item old ?', hasVeryOldItem);
 
 
 // 🎯 TODO 13: Find a specific item
 // 1. Find the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
+const targetUuid = 'f2c5377c-84f9-571d-8712-98902dcbb913';
+const foundItem = VINTED.find(item => item.uuid === targetUuid);
 // 2. Log the item
+console.log('Found item =', foundItem);
+
 
 // 🎯 TODO 14: Delete a specific item
 // 1. Delete the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
