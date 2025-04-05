@@ -120,6 +120,16 @@ const renderLegoSetIds = deals => {
   selectLegoSetIds.innerHTML = options;
 };
 
+selectPage.addEventListener('change', async (event) => {
+  const selectedPage = parseInt(event.target.value);
+  // On réutilise la taille de page courante
+  const size = parseInt(selectShow.value);
+  const deals = await fetchDeals(selectedPage, size);
+
+  setCurrentDeals(deals);
+  render(currentDeals, currentPagination);
+});
+
 /**
  * Render page selector
  * @param  {Object} pagination
