@@ -120,15 +120,10 @@ const renderLegoSetIds = deals => {
   selectLegoSetIds.innerHTML = options;
 };
 
-selectPage.addEventListener('change', async (event) => {
-  const selectedPage = parseInt(event.target.value);
-  // On réutilise la taille de page courante
-  const size = parseInt(selectShow.value);
-  const deals = await fetchDeals(selectedPage, size);
+const filterDiscountButton = document.querySelector('#filter-discount');
 
-  setCurrentDeals(deals);
-  render(currentDeals, currentPagination);
-});
+let isBestDiscountActive = false;
+
 
 /**
  * Render page selector
@@ -166,4 +161,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
+});
+
+selectPage.addEventListener('change', async (event) => {
+  const selectedPage = parseInt(event.target.value);
+  // On réutilise la taille de page courante
+  const size = parseInt(selectShow.value);
+  const deals = await fetchDeals(selectedPage, size);
+
+  setCurrentDeals(deals);
+  render(currentDeals, currentPagination);
+});
+
+filterDiscountButton.addEventListener('click', () => {
+  // on inverse la valeur (false -> true, true -> false)
+  isBestDiscountActive = !isBestDiscountActive;
+
+  if (isBestDiscountActive) {
+    // Filtrage activé : discount >= 50%
+    const filteredDeals = currentDeals.filter(deal => deal.discount >= 50);
+    renderDeals(filteredDeals);
+    spanNbDeals.innerHTML = filteredDeals.length;
+
+    // Optionnel : style visuel pour indiquer que le bouton est actif
+    filterDiscountButton.classList.add('active');
+  } else {
+    // Filtrage désactivé : on montre tous les deals
+    renderDeals(currentDeals);
+    spanNbDeals.innerHTML = currentDeals.length;
+
+    // On retire le style d'activation
+    filterDiscountButton.classList.remove('active');
+  }
 });
