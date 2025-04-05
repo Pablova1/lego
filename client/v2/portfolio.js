@@ -120,10 +120,33 @@ const renderLegoSetIds = deals => {
   selectLegoSetIds.innerHTML = options;
 };
 
-const filterDiscountButton = document.querySelector('#filter-discount');
+// Checkboxes for discount, comments, hot
+const discountCheckbox = document.querySelector('#filter-discount');
+const mostCommentedCheckbox = document.querySelector('#filter-most-commented');
+const hotCheckbox = document.querySelector('#filter-hot');
 
-let isBestDiscountActive = false;
+function applyFilters() {
+  let filtered = [...currentDeals]; // liste complète au départ
 
+  // Feature 2 - Filter by best discount
+  if (discountCheckbox.checked) {
+    filtered = filtered.filter(deal => deal.discount >= 50);
+  }
+
+  // Feature 3 - Filter by most commented
+  if (mostCommentedCheckbox.checked) {
+    filtered = filtered.filter(deal => deal.commentsCount > 15);
+  }
+
+  // Feature 4 - Filter by hot deals
+  if (hotCheckbox.checked) {
+    filtered = filtered.filter(deal => deal.temperature > 100);
+  }
+
+  // Rendu final
+  renderDeals(filtered);
+  spanNbDeals.innerHTML = filtered.length;
+}
 
 /**
  * Render page selector
@@ -173,24 +196,6 @@ selectPage.addEventListener('change', async (event) => {
   render(currentDeals, currentPagination);
 });
 
-filterDiscountButton.addEventListener('click', () => {
-  // on inverse la valeur (false -> true, true -> false)
-  isBestDiscountActive = !isBestDiscountActive;
-
-  if (isBestDiscountActive) {
-    // Filtrage activé : discount >= 50%
-    const filteredDeals = currentDeals.filter(deal => deal.discount >= 50);
-    renderDeals(filteredDeals);
-    spanNbDeals.innerHTML = filteredDeals.length;
-
-    // Optionnel : style visuel pour indiquer que le bouton est actif
-    filterDiscountButton.classList.add('active');
-  } else {
-    // Filtrage désactivé : on montre tous les deals
-    renderDeals(currentDeals);
-    spanNbDeals.innerHTML = currentDeals.length;
-
-    // On retire le style d'activation
-    filterDiscountButton.classList.remove('active');
-  }
-});
+discountCheckbox.addEventListener('change', applyFilters);
+mostCommentedCheckbox.addEventListener('change', applyFilters);
+hotCheckbox.addEventListener('change', applyFilters);
