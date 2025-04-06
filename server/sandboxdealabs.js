@@ -1,18 +1,29 @@
-/* eslint-disable no-console, no-process-exit */
-const dealabs = require('./websites/dealabs');
+const fs = require('fs');
+const path = require('path');
+const { scrapeAllDeals } = require('./dealabs');
+const { connectToMongo } = require('./db');
 
-async function sandbox (website = 'https://www.dealabs.com/groupe/lego') {
+async function main() {
   try {
-    console.log(`🕵️‍♀️  browsing ${website} website`);
-    const deals = await dealabs.scrape(website);
-    console.log(deals);
-    console.log('✅ done');
-    process.exit(0);
-  } catch (e) {
-    console.error(e);
-    process.exit(1);
+    const deals = await scrapeAllDeals();
+
+    if (!deals.length) {
+      console.warn("⚠️ Aucun deal trouvé.");
+      return;
+    }
+
+    const filePath = path.join(__dirname, 'dealabs.json');
+    fs.writeFileSync(filePath, JSON.stringify(deals, null, 2));
+    console.log(`📦 ${deals.length} deals sauvegardés dans dealabs.json`);
+
+    const db = await connectToMongo();
+    const collection = db.collection('dealabs');
+    await collection.insertMany(deals);
+    console.log("💾 Données Dealabs insérées dans MongoDB");
+
+  } catch (err) {
+    console.error("❌ Erreur :", err.message);
   }
 }
 
-const [,, eshop] = process.argv;
-sandbox(eshop);
+main();
