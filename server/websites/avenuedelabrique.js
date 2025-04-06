@@ -26,8 +26,9 @@ const parse = data => {
       return {
         discount,
         price,
-        'title': $(element).attr('title'),
-      };
+        title: $(element).attr('title'),
+        link: 'https://www.avenuedelabrique.com' + $(element).attr('href'),
+      };      
     })
     .get();
 };

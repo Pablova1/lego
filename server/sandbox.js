@@ -1,4 +1,5 @@
 /* eslint-disable no-console, no-process-exit */
+const fs = require('fs');
 const avenuedelabrique = require('./websites/avenuedelabrique');
 
 async function sandbox (website = 'https://www.avenuedelabrique.com/nouveautes-lego') {
@@ -8,6 +9,11 @@ async function sandbox (website = 'https://www.avenuedelabrique.com/nouveautes-l
     const deals = await avenuedelabrique.scrape(website);
 
     console.log(deals);
+
+    // ✅ Ici : écrire dans le fichier JSON
+    fs.writeFileSync('deals.json', JSON.stringify(deals, null, 2), 'utf-8');
+    console.log('✅ deals.json généré');
+
     console.log('done');
     process.exit(0);
   } catch (e) {
@@ -17,5 +23,4 @@ async function sandbox (website = 'https://www.avenuedelabrique.com/nouveautes-l
 }
 
 const [,, eshop] = process.argv;
-
 sandbox(eshop);
