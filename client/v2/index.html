@@ -1,75 +1,157 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>🧱 Lego | Predictability of a lego set deal</title>
-  </head>
-  <body>
-    <h1>Lego</h1>
-    <section id="options">
-      <div id="show">
-        <label for="show-select">Show:</label>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🧱 Lego Deal Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background-color: #f5f7fa;
+      color: #333;
+    }
+
+    header {
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #0a58ca;
+    }
+
+    section {
+      margin-bottom: 2rem;
+    }
+
+    #options, #lego, #indicators {
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin: 0.5rem 0;
+    }
+
+    select, input[type="checkbox"] {
+      margin-left: 0.5rem;
+    }
+
+    .deal {
+      background-color: white;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .deal a {
+      font-weight: bold;
+      color: #0a58ca;
+      text-decoration: none;
+    }
+
+    .deal a:hover {
+      text-decoration: underline;
+    }
+
+    .favorite-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      align-self: flex-end;
+    }
+
+    .sale {
+      background-color: #fff;
+      border-radius: 6px;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    #sales h2, #deals h2 {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧱 Lego Deal Finder</h1>
+  </header>
+
+  <section id="options">
+    <div id="show">
+      <label for="show-select">Show:
         <select name="show" id="show-select">
           <option value="6">6</option>
           <option value="12">12</option>
           <option value="24">24</option>
         </select>
-      </div>
-      <div id="page">
-        <label for="page-select">Go to page:</label>
-        <select name="page" id="page-select"> </select>
-      </div>
-      <div id="filters">
-        <span>By best discount</span>
-        <span>By most commented</span>
-        <span>By hot deals</span>
-      </div>
-      <div id="sort">
-        <label for="sort-select">Sort:</label>
+      </label>
+    </div>
+
+    <div id="page">
+      <label for="page-select">Go to page:
+        <select name="page" id="page-select"></select>
+      </label>
+    </div>
+
+    <div id="filters">
+      <label><input type="checkbox" id="filter-discount"> Best discount (>50%)</label>
+      <label><input type="checkbox" id="filter-most-commented"> Most commented (>15)</label>
+      <label><input type="checkbox" id="filter-hot"> Hot deals (>100)</label>
+      <label><input type="checkbox" id="filter-favorites"> Favorites only ❤️</label>
+    </div>
+
+    <div id="sort">
+      <label for="sort-select">Sort:
         <select name="sort" id="sort-select">
-          <option value="price-asc">Cheaper</option>
-          <option value="price-desc">Expensive</option>
-          <option value="date-asc">Recently published</option>
-          <option value="date-desc">Anciently published</option>
+          <option value="price-asc">Price: cheapest first</option>
+          <option value="price-desc">Price: expensive first</option>
+          <option value="date-asc">Date: newest first</option>
+          <option value="date-desc">Date: oldest first</option>
         </select>
-      </div>
-    </section>
-    <section id="lego">
-      <h2>Lego sets</h2>
-      <div>
-        <label>Lego set id:</label>
-        <select id="lego-set-id-select"></select> 
-      </div>
-    </section>
-    <section id="indicators">
-      <h2>Indicators</h2>
-      <div>
-        <span>Number of deals</span>
-        <span id="nbDeals">0</span>
-      </div>
-      <div>
-        <span>Number of sales</span>
-        <span id="nbSales">0</span>
-      </div>
-      <div>
-        <span>p5 sales price value</span>
-        <span>0</span>
-      </div>
-      <div>
-        <span>p25 sales price value</span>
-        <span>0</span>
-      </div>
-      <div>
-        <span>p50 sales price value</span>
-        <span>0</span>
-      </div>
-      <div>
-        <span>Lifetime value</span>
-        <span>10 days</span>
-      </div>
-    </section>
-    <section id="deals"></section>
-    <script type="text/javascript" charset="UTF-8" src="utils.js"></script>
-    <script type="text/javascript" charset="UTF-8" src="portfolio.js"></script>
-  </body>
+      </label>
+    </div>
+  </section>
+
+  <section id="lego">
+    <h2>Lego sets</h2>
+    <label>Lego set id:
+      <select id="lego-set-id-select"></select>
+    </label>
+  </section>
+
+  <section id="sales"></section>
+
+  <section id="indicators">
+    <h2>Indicators</h2>
+    <div><strong>Number of deals:</strong> <span id="nbDeals">0</span></div>
+    <div><strong>Number of sales:</strong> <span id="nbSales">0</span></div>
+    <div><strong>p5 sales price value:</strong> <span id="p5Sales">0</span></div>
+    <div><strong>p25 sales price value:</strong> <span id="p25Sales">0</span></div>
+    <div><strong>p50 sales price value:</strong> <span id="p50Sales">0</span></div>
+    <div><strong>Average sales price:</strong> <span id="avgSales">0</span></div>
+    <div><strong>Lifetime value:</strong> <span id="lifetimeValue">0 days</span></div>
+  </section>
+
+  <section id="deals"></section>
+
+  <script src="utils.js"></script>
+  <script src="portfolio.js"></script>
+</body>
 </html>
