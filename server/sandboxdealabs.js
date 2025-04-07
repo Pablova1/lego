@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { scrapeAllDeals } = require('./dealabs');
+const { scrapeAllDeals } = require('./websites/dealabs');
 const { connectToMongo } = require('./db');
 
 async function main() {
@@ -18,7 +18,11 @@ async function main() {
 
     const db = await connectToMongo();
     const collection = db.collection('dealabs');
+
+    // 🧹 Supprimer les anciens deals avant de les insérer
+    await collection.deleteMany({});
     await collection.insertMany(deals);
+
     console.log("💾 Données Dealabs insérées dans MongoDB");
 
   } catch (err) {

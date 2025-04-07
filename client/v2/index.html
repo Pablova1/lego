@@ -1,155 +1,416 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>🧱 Lego Deal Finder</title>
+  <title>Scraper de Lego</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    /* ------------------------------
+       Variables de couleurs et thèmes
+       ------------------------------ */
+    :root {
+      --gradient-start: #00ff85; /* Vert clair */
+      --gradient-end: #007545;   /* Vert foncé */
+      --bg-color: #1b1b1b;       /* Fond sombre */
+      --text-color: #ffffff;     /* Texte principal */
+      --secondary-text: #cccccc; /* Texte secondaire */
+      --card-bg: #2a2a2a;        /* Fond pour les cartes d'articles */
+      --border-radius: 8px;
+      --transition-speed: 0.2s;
+      --btn-hover-opacity: 0.85;
+      --modal-overlay-bg: rgba(0, 0, 0, 0.8);
+      --separator-color: #3a3a3a; /* Trait gris */
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 1rem;
-      background-color: #f5f7fa;
-      color: #333;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Roboto Condensed', Arial, sans-serif;
     }
 
-    header {
-      background-color: #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 2rem;
-      color: #0a58ca;
-    }
-
-    section {
-      margin-bottom: 2rem;
-    }
-
-    #options, #lego, #indicators {
-      background-color: #fff;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    label {
-      display: block;
-      margin: 0.5rem 0;
-    }
-
-    select, input[type="checkbox"] {
-      margin-left: 0.5rem;
-    }
-
-    .deal {
-      background-color: white;
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .deal a {
-      font-weight: bold;
-      color: #0a58ca;
+    a {
+      color: #00ffb3;
       text-decoration: none;
     }
-
-    .deal a:hover {
+    a:hover {
       text-decoration: underline;
     }
 
+    /* ------------------------------
+       Header + Titre
+       ------------------------------ */
+    header {
+      text-align: center;
+      padding: 1rem;
+    }
+    header h1 {
+      font-size: 3rem;
+      text-transform: uppercase;
+      font-weight: bold;
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    /* Trait gris sous le header */
+    .header-separator {
+      width: 100%;
+      height: 1px;
+      background-color: var(--separator-color);
+      border: none;
+      margin: 0;
+    }
+
+    /* ------------------------------
+       Layout principal
+       ------------------------------ */
+    main {
+      display: flex;
+      gap: 1rem;
+      padding: 0 1rem 3rem;
+      align-items: flex-start; /* Aligne aside et .content en haut */
+    }
+
+    aside {
+      flex: 0 0 250px;
+      background-color: #222;
+      border-radius: var(--border-radius);
+      padding: 1rem;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ------------------------------
+       Recherche dans aside
+       ------------------------------ */
+    #search-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    #search-container label {
+      font-size: 0.9rem;
+      color: var(--secondary-text);
+      min-width: 90px;
+    }
+    #search-id {
+      flex: 1;
+      background-color: #333;
+      color: var(--text-color);
+      border: 1px solid #444;
+      border-radius: var(--border-radius);
+      padding: 0.3rem 0.5rem;
+      outline: none;
+    }
+
+    /* ------------------------------
+       Filtres / Options
+       ------------------------------ */
+    aside h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .filter-section label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--secondary-text);
+    }
+
+    #options {
+      margin-top: 1rem;
+    }
+
+    #options > div {
+      margin-bottom: 1rem;
+    }
+
+    #options label {
+      display: flex;
+      align-items: center;
+      color: var(--secondary-text);
+      font-size: 0.9rem;
+    }
+
+    select {
+      margin-left: 0.5rem;
+      background-color: #333;
+      color: var(--text-color);
+      border: 1px solid #444;
+      border-radius: var(--border-radius);
+      padding: 0.3rem 0.5rem;
+      outline: none;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 0.5rem;
+      transform: scale(1.2);
+    }
+
+    .sort-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ------------------------------
+       Pagination
+       ------------------------------ */
+    .pagination-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 1rem 0;
+      gap: 1rem;
+    }
+
+    .pagination-btn {
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      border: none;
+      border-radius: var(--border-radius);
+      /* Boutons plus petits */
+      padding: 0.4rem 0.8rem;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: opacity var(--transition-speed) ease-in-out;
+    }
+    .pagination-btn:hover {
+      opacity: var(--btn-hover-opacity);
+    }
+
+    /* ------------------------------
+       Grille des articles
+       ------------------------------ */
+    #deal-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .deal-card {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      /* Blocs un peu plus petits */
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+      transition: transform var(--transition-speed);
+    }
+    .deal-card:hover {
+      transform: scale(1.02);
+    }
+
+    .deal-image {
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      background-color: #444;
+      border-radius: var(--border-radius);
+      object-fit: cover;
+      margin-bottom: 0.3rem;
+    }
+    .deal-title {
+      font-size: 0.9rem;
+      text-align: center;
+      font-weight: bold;
+    }
+    .deal-price {
+      font-size: 0.85rem;
+      margin: 0.2rem 0;
+    }
     .favorite-btn {
       background: none;
       border: none;
       cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    /* ------------------------------
+       Modal
+       ------------------------------ */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: var(--modal-overlay-bg);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    #modal-content {
+      background-color: #2a2a2a;
+      width: 60%;
+      max-width: 800px;
+      border-radius: var(--border-radius);
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      padding: 2rem;
+    }
+
+    .modal-flex-container {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .modal-info {
+      flex: 1;
+    }
+
+    .modal-image-block {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .modal-image-block img {
+      max-width: 100%;
+      max-height: 350px;
+      border-radius: var(--border-radius);
+      object-fit: cover;
+    }
+
+    .modal-deal-title {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      text-align: left;
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .modal-indicator-section {
+      margin-top: 1rem;
+      border-top: 1px solid #444;
+      padding-top: 1rem;
+    }
+    .modal-indicator-section h2 {
       font-size: 1.2rem;
-      align-self: flex-end;
+      margin-bottom: 0.8rem;
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .indicator-item {
+      margin-bottom: 0.3rem;
+      color: var(--secondary-text);
+    }
+    .modal-sales-list > div {
+      margin-bottom: 0.5rem;
     }
 
-    .sale {
-      background-color: #fff;
-      border-radius: 6px;
-      padding: 0.8rem;
-      margin: 0.5rem 0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    #sales h2, #deals h2 {
-      margin-bottom: 1rem;
-    }
   </style>
 </head>
 <body>
   <header>
-    <h1>🧱 Lego Deal Finder</h1>
+    <h1>Scraper de Lego</h1>
   </header>
+  <!-- Trait gris -->
+  <hr class="header-separator">
 
-  <section id="options">
-    <div id="show">
-      <label for="show-select">Show:
-        <select name="show" id="show-select">
-          <option value="6">6</option>
-          <option value="12">12</option>
-          <option value="24">24</option>
-        </select>
-      </label>
+  <main>
+    <!-- Barre latérale -->
+    <aside>
+      <!-- Barre de recherche ID -->
+      <div id="search-container">
+        <label for="search-id">Recherche par id :</label>
+        <input type="text" id="search-id" placeholder="Ex: 75355" />
+      </div>
+
+      <h2>Filtres</h2>
+      <div class="filter-section">
+        <label>
+          <input type="checkbox" id="filter-discount">
+          Meilleures promos
+        </label>
+        <label>
+          <input type="checkbox" id="filter-most-commented">
+          Plus commentés
+        </label>
+        <label>
+          <input type="checkbox" id="filter-hot">
+          Offres chaudes
+        </label>
+        <label>
+          <input type="checkbox" id="filter-favorites">
+          Favoris
+        </label>
+      </div>
+
+      <h2>Options</h2>
+      <div id="options">
+        <div id="show">
+          <label for="show-select">Afficher :
+            <select name="show" id="show-select">
+              <option value="6">6</option>
+              <option value="12">12</option>
+              <option value="24">24</option>
+            </select>
+          </label>
+        </div>
+        <div class="sort-row" id="sort">
+          <span>Trier :</span>
+          <select name="sort" id="sort-select">
+            <option value="price-asc">Prix croissant</option>
+            <option value="price-desc">Prix décroissant</option>
+            <option value="date-asc" selected>Dates récentes</option>
+            <option value="date-desc">Dates anciennes</option>
+          </select>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Contenu principal (liste d'articles + pagination) -->
+    <div class="content">
+      <!-- Pagination haute -->
+      <div class="pagination-container" id="top-pagination">
+        <button class="pagination-btn" id="prev-btn-top">Page précédente</button>
+        <button class="pagination-btn" id="next-btn-top">Page suivante</button>
+      </div>
+
+      <!-- Liste des deals -->
+      <div id="deal-list"></div>
+
+      <!-- Pagination basse -->
+      <div class="pagination-container" id="bottom-pagination">
+        <button class="pagination-btn" id="prev-btn-bottom">Page précédente</button>
+        <button class="pagination-btn" id="next-btn-bottom">Page suivante</button>
+      </div>
     </div>
+  </main>
 
-    <div id="page">
-      <label for="page-select">Go to page:
-        <select name="page" id="page-select"></select>
-      </label>
+  <!-- Modal (overlay + contenu) -->
+  <div id="modal-overlay">
+    <div id="modal-content">
+      <!-- Contenu dynamique injecté via JS -->
+      <div id="modal-main-content"></div>
     </div>
-
-    <div id="filters">
-      <label><input type="checkbox" id="filter-discount"> Best discount (>50%)</label>
-      <label><input type="checkbox" id="filter-most-commented"> Most commented (>15)</label>
-      <label><input type="checkbox" id="filter-hot"> Hot deals (>100)</label>
-      <label><input type="checkbox" id="filter-favorites"> Favorites only ❤️</label>
-    </div>
-
-    <div id="sort">
-      <label for="sort-select">Sort:
-        <select name="sort" id="sort-select">
-          <option value="price-asc">Price: cheapest first</option>
-          <option value="price-desc">Price: expensive first</option>
-          <option value="date-asc">Date: newest first</option>
-          <option value="date-desc">Date: oldest first</option>
-        </select>
-      </label>
-    </div>
-  </section>
-
-  <section id="lego">
-    <h2>Lego sets</h2>
-    <label>Lego set id:
-      <select id="lego-set-id-select"></select>
-    </label>
-  </section>
-
-  <section id="sales"></section>
-
-  <section id="indicators">
-    <h2>Indicators</h2>
-    <div><strong>Number of deals:</strong> <span id="nbDeals">0</span></div>
-    <div><strong>Number of sales:</strong> <span id="nbSales">0</span></div>
-    <div><strong>p5 sales price value:</strong> <span id="p5Sales">0</span></div>
-    <div><strong>p25 sales price value:</strong> <span id="p25Sales">0</span></div>
-    <div><strong>p50 sales price value:</strong> <span id="p50Sales">0</span></div>
-    <div><strong>Average sales price:</strong> <span id="avgSales">0</span></div>
-    <div><strong>Lifetime value:</strong> <span id="lifetimeValue">0 days</span></div>
-  </section>
-
-  <section id="deals"></section>
+  </div>
 
   <script src="utils.js"></script>
   <script src="portfolio.js"></script>

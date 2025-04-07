@@ -1,12 +1,13 @@
-// Invoking strict mode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode#invoking_strict_mode
 'use strict';
 
-
 /**
- * 
- * @param {Array} deals - list of deals
- * @returns {Array} list of lego set ids
+ * Retourne la liste des ID lego extraits des deals
+ * Dans ce code, on n'en a plus forcément besoin, 
+ * mais on la laisse si vous souhaitez l'utiliser pour un select d’IDs.
+ * @param {Array} deals
+ * @returns {Array} tableau d’IDs uniques
  */
-const getIdsFromDeals = deals => {
-    return deals.map(deal => deal.id)
+function getIdsFromDeals(deals) {
+  const uniqueIds = new Set(deals.map(deal => deal.id));
+  return [...uniqueIds];
 }

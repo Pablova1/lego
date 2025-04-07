@@ -1,29 +1,23 @@
-require('dotenv').config(); // charge le .env
+require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const cors = require('cors');
 
-////////////////////////////////////////////////////////////////////////////////
-// CONFIGURATION GLOBALE
-////////////////////////////////////////////////////////////////////////////////
-
 const app = express();
-app.use(cors());
 
-// Récupère la config Mongo
+// Autorise CORS et parsing JSON
+app.use(cors());
+app.use(express.json());
+
+// Variables de connexion MongoDB
 const uri = process.env.MONGODB_URI || '';
 const dbName = process.env.MONGODB_DB_NAME || 'lego';
 
-// Variables globales
-let client; // on stocke le client Mongo au niveau global
-let db;     // on stocke la db Mongo au niveau global
+let client;
+let db;
 
-/**
- * connectIfNeeded
- * Se connecte à Mongo UNIQUEMENT si on ne l'a pas déjà fait.
- */
+// Fonction de connexion "lazy"
 async function connectIfNeeded() {
-  // Si on a déjà un client initialisé, on ne refait pas de connexion.
   if (!client) {
     console.log('Tentative de connexion à MongoDB...');
     client = new MongoClient(uri);
@@ -33,86 +27,91 @@ async function connectIfNeeded() {
   }
 }
 
-/**
- * Middleware (app.use) : avant de traiter une route, on s'assure que la connexion est faite.
- */
+// Middleware pour s'assurer que la connexion est établie avant chaque requête
 app.use(async (req, res, next) => {
   try {
     await connectIfNeeded();
+    next();
   } catch (err) {
-    console.error('❌ MongoDB connection error:', err);
-    return res.status(500).json({ error: 'Impossible de se connecter à MongoDB' });
+    console.error('Erreur de connexion MongoDB:', err);
+    res.status(500).json({ error: 'Impossible de se connecter à MongoDB' });
   }
-  // si la connexion est OK, on passe au handler de la route
-  next();
 });
 
-////////////////////////////////////////////////////////////////////////////////
-// ROUTES
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * GET / -> simple test
- */
+// Route test pour l'API
 app.get('/', (req, res) => {
-  res.json({ 
-    ack: true 
-  });
+  res.json({ ack: true });
 });
 
-
-/**
- * GET /deals/search
- * exemple : http://localhost:3000/deals/search
- */
-app.get('/deals/search', async (req, res) => {
+// Exemple d'endpoint GET pour récupérer des deals
+app.get('/api/deals/search', async (req, res) => {
   try {
-    const { limit = 12 } = req.query;
-    const results = await db
-      .collection('dealabs')
-      .find({})
+    const { limit = 12, price, date, filterBy } = req.query;
+    const query = {};
+    if (price) query.price = { $lte: Number(price) };
+    if (date) query.published = { $gte: new Date(date).getTime() / 1000 };
+    if (filterBy === 'best-discount') query.discount = { $gte: 20 };
+    if (filterBy === 'most-commented') query.comments = { $gte: 10 };
+
+    const results = await db.collection('dealabs')
+      .find(query)
+      .sort({ price: 1 })
       .limit(Number(limit))
       .toArray();
 
     res.json({ limit, total: results.length, results });
   } catch (err) {
-    console.error('Erreur /deals/search:', err);
-    res.status(500).send({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-/**
- * GET /sales/search
- * exemple : http://localhost:3000/sales/search
- */
-app.get('/sales/search', async (req, res) => {
+// Endpoint POST pour ajouter un nouveau deal
+app.post('/api/deals', async (req, res) => {
   try {
-    const { limit = 12 } = req.query;
-    const results = await db
-      .collection('sales')
-      .find({})
-      .limit(Number(limit))
-      .toArray();
-
-    res.json({ limit, total: results.length, results });
+    const newDeal = req.body;
+    if (!newDeal.id) {
+      return res.status(400).json({ error: 'Le champ "id" est requis.' });
+    }
+    const result = await db.collection('dealabs').insertOne(newDeal);
+    res.status(201).json({
+      acknowledged: result.acknowledged,
+      insertedId: result.insertedId
+    });
   } catch (err) {
-    console.error('Erreur /sales/search:', err);
-    res.status(500).send({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-////////////////////////////////////////////////////////////////////////////////
-// LANCEMENT EN LOCAL ou EXPORT POUR VERCEL
-////////////////////////////////////////////////////////////////////////////////
+// Endpoint PUT pour mettre à jour un deal existant
+app.put('/api/deals/:id', async (req, res) => {
+  try {
+    const dealId = req.params.id;
+    const updateData = req.body;
+    if (!updateData || Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'Aucune donnée fournie pour la mise à jour.' });
+    }
+    const result = await db.collection('dealabs').updateOne(
+      { id: dealId },
+      { $set: updateData }
+    );
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: 'Deal non trouvé.' });
+    }
+    res.json({
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-const PORT = 8092;
-
-// Si on exécute "node api.js" directement, on démarre un server local sur 8092
+// Démarrage du serveur en local (pour tester avec "node server/api.js")
+const PORT = process.env.PORT || 8092;
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`📡 Running on port ${PORT}`);
+    console.log(`📡 Server running on port ${PORT}`);
   });
 }
 
-// Sinon, on exporte pour Vercel
 module.exports = app;
