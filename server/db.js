@@ -1,20 +1,26 @@
-require('dotenv').config();
+// db.js
 const { MongoClient } = require('mongodb');
+const dotenv = require('dotenv');
+dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB_NAME = 'lego';
+const uri = process.env.MONGODB_URI; // ex: "mongodb+srv://..."
+const dbName = process.env.MONGODB_DB_NAME || 'lego';
 
-let client;
 let db;
 
 async function connectToMongo() {
-  if (!client) {
-    client = new MongoClient(MONGODB_URI);
-    await client.connect();
-    db = client.db(MONGODB_DB_NAME);
-    console.log('✅ Connexion à MongoDB établie');
-  }
-  return { client, db };
+  const client = new MongoClient(uri);
+  await client.connect();
+  db = client.db(dbName);
+  console.log("✅ MongoDB connected");
+  return db;
 }
 
-module.exports = { connectToMongo };
+function getDb() {
+  if (!db) {
+    throw new Error("❌ DB not initialized. Call connectToMongo first.");
+  }
+  return db;
+}
+
+module.exports = { connectToMongo, getDb };
